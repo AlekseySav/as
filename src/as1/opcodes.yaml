@@ -1,0 +1,195 @@
+put:
+  u im*:      for (int i = 0; i < nargs; i++) put_im(i)
+
+res:
+  u i2:       for (int i = 0; i < arg(0)->constant; i++) put(0)
+
+seg:
+  w sr:       "putb(sr < 4 ? (0x26 | sr << 3) : (0x64 + sr - 4))"
+
+mov:
+  u r! um:    putb(0xb0 | rr | size << 3), put_im(1)
+  w rm sr:    putb(0x8c), put_rm(sr)
+  w sr rm:    putb(0x8e), put_rm(sr)
+  u rm r!:    if (rr == 0 && modrm == 6) putb(0xa2 | size), put_rm(-1);
+              else putb(0x88 | size), put_rm(rr)
+  u r! rm:    if (rr == 0 && modrm == 6) putb(0xa0 | size), put_rm(-1);
+              else putb(0x8a | size), put_rm(rr)
+
+xchg:
+  w ax rr | w rr ax: putb(0x90 | rr)
+  u r! rm | u rm r!: putb(0x86 | size), put_rm(rr)
+
+math0:
+  w m2 i1:    putb(0x83), put_rm(n), putb_im(1)
+  u rm r!:    putb(n << 3 | 0 | size), put_rm(rr)
+  u r! rm:    putb(n << 3 | 2 | size), put_rm(rr)
+  u al a1:    putb(n << 3 | 4), putb_im(1)
+  u ax im:    putb(n << 3 | 5), putw_im(1)
+  u m! im:    putb(0x80 | size), put_rm(n), put_im(1)
+
+math1:
+  u m! u1:    if (arg(1)->defined && !arg(1)->filerel && arg(1)->constant == 1) putb(0xd0 | size), put_rm(n);
+              else putb(0xc0 | size), put_rm(n), putb_im(1)
+  u m! cl:    putb(0xd2 | size), put_rm(n)
+
+math2:
+  w rr:       putb(n << 3 | 0x40 | rr)
+  u rm:       putb(0xfe | size), put_rm(n)
+
+math3:
+  u rm:       putb(0xf6 | size), put_rm(n)
+
+math4:
+  u al u1:    putb(0xa8), putb_im(1)
+  w ax um:    putb(0xa9), putw_im(1)
+  u m! um:    putb(0xf6 | size), put_rm(n), put_im(1)
+  u rm r!:    putb(0x84 | size), put_rm(rr)
+
+math5:
+  w rr rm:    putf(0xaf), put_rm(rr)
+  u r2 im:    putb(0x6b - (size << 1)), putb(rr << 3 | rr | 0xc0), put_im(1)
+  u r2 rm im: putb(0x6b - (size << 1)), put_rm(rr), put_im(2)
+  extends:    math3
+
+stck0:
+  w r2:       putb(0x50 | n << 3 | rr)
+  w sr:       "sr < 4 ? putb(0x06 | n | sr << 3) : putf(0xa0 | n | sr - 4 << 3)"
+  w rm:       "putb(n ? 0x8f : 0xff), put_rm((1 - n) * 6)"
+
+stck1:
+  u im:       putb(0x6a - size * 2), put_im(0)
+  extends:    stck0
+
+addr0:
+  w rr rm:    putb(n), put_rm(rr)
+
+jump0:
+  u i2:       putb(n), putb_dd(0)
+
+jump1:
+  b i2:       putb(0xeb), putb_dd(0)
+  w im:       putb(0xe8 | n >> 2), putw_dd(0)
+  w im im:    "putb(n > 3 ? 0xea : 0x9a), putw_im(1), putw_im(0)"
+  w rm:       putb(0xff), put_rm(n)
+
+retn0:
+  w:          putb(n | 1)
+  w um:       putb(n), putw_im(0)
+
+port0:
+  u:          putb(0xec | n | size)
+  u u1:       putb(0xe4 | n | size), putb_im(0)
+
+byte0:
+  u:          putb(n | size)
+
+byte1:
+  w:          putb(n)
+
+byte2:
+  w u1:       putb(n), putb_im(0)
+
+
+opcodes:
+  "":         put
+  res:        res
+  seg:        seg
+  mov:        mov
+  xchg:       xchg
+  add:        math0 00
+  or:         math0 01
+  adc:        math0 02
+  sbb:        math0 03
+  and:        math0 04
+  sub:        math0 05
+  xor:        math0 06
+  cmp:        math0 07
+  rol:        math1 00
+  ror:        math1 01
+  rcl:        math1 02
+  rcr:        math1 03
+  sal:        math1 04
+  shl:        math1 04  # sal/shl are synonyms
+  shr:        math1 05
+  sar:        math1 07
+  inc:        math2 00
+  dec:        math2 01
+  test:       math4 00  # test is extended math3
+  not:        math3 02
+  neg:        math3 03
+  mul:        math3 04
+  imul:       math5 05  # imul is extended math3
+  div:        math3 06
+  idiv:       math3 07
+  push:       stck1 00  # push is extended stck0
+  pop:        stck0 01
+  les:        addr0 c4
+  lds:        addr0 c5
+  lea:        addr0 8d
+  jo:         jump0 70
+  jno:        jump0 71
+  jb:         jump0 72
+  jc:         jump0 72
+  jnb:        jump0 73
+  jnc:        jump0 73
+  je:         jump0 74
+  jz:         jump0 74
+  jne:        jump0 75
+  jna:        jump0 76
+  ja:         jump0 77
+  js:         jump0 78
+  jns:        jump0 79
+  jp:         jump0 7a
+  jnp:        jump0 7b
+  jl:         jump0 7c
+  jnl:        jump0 7d
+  jng:        jump0 7e
+  jg:         jump0 7f
+  loopne:     jump0 e0
+  loope:      jump0 e1
+  loop:       jump0 e2
+  jcxz:       jump0 e3
+  call:       jump1 02
+  lcall:      jump1 03
+  jmp:        jump1 04
+  ljmp:       jump1 05
+  ret:        retn0 c2
+  retf:       retn0 ca
+  in:         port0 00
+  out:        port0 02
+  movs:       byte0 a4
+  cmps:       byte0 a6
+  stos:       byte0 aa
+  lods:       byte0 ac
+  scas:       byte0 ae
+  pusha:      byte1 60
+  popa:       byte1 61
+  nop:        byte1 90
+  cbw:        byte1 98
+  cwd:        byte1 99
+  pushf:      byte1 9c
+  popf:       byte1 9d
+  sahf:       byte1 9e
+  lahf:       byte1 9f
+  leave:      byte1 c9
+  int3:       byte1 cc
+  into:       byte1 ce
+  iret:       byte1 cf
+  xlat:       byte1 d7
+  repne:      byte1 f2
+  repe:       byte1 f3
+  rep:        byte1 f3
+  hlt:        byte1 f4
+  cmc:        byte1 f5
+  clc:        byte1 f8
+  stc:        byte1 f9
+  cli:        byte1 fa
+  sti:        byte1 fb
+  cld:        byte1 fc
+  std:        byte1 fd
+  int:        byte2 cd
+  rts:        rts
+
+rts:
+  w:          putw(0xe6ff)

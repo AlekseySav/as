@@ -1,0 +1,177 @@
+#!/bin/bash
+
+echo ok, it\'s time for main test
+
+reg1="al cl dl bl ah ch dh bh"
+reg2="ax cx dx bx sp bp si di"
+sreg="es ss ds fs gs"
+cseg="es cs ss ds fs gs"
+imm1="00 01 02 03 0x7f 0xff"
+imm2="0xfff 0xff1 0xff5 0x9fff 1204 1234"
+mem_nasm="0xfff 0x123 0xffff 0x10 bx+si bx+di bp+si bp+di si di bx bx+0x12 bx+si+1"
+mem_asm="0xfff 0x123 0xffff 0x10 bx,si bx,di bp,si bp,di si di bx bx,0x12 bx,si,1"
+
+math0="add or adc sbb and sub xor cmp"
+math1="rol ror rcl rcr sal shl shr sar"
+math2="inc dec"
+math3="not neg mul imul div idiv"
+math4="test"
+math5="imul"
+stck0="push pop"
+stck1="push"
+jump0="jo jno jb jnb je jne jna ja js jp jnp jl jnl jng jg jno"
+byte0="movs cmps stos lods scas"
+byte1="pusha popa nop cbw cwd pushf popf sahf lahf leave int3 into iret xlat repne repe rep hlt cmc clc stc cli sti cld std"
+
+run_test() {
+    nasm -f bin test/tmp1.asm -o test/tmp1
+#    echo "_\$L;_\$R;_\$T; /* don't put tail relocs & symtab */" >>test/tmp2.s
+    ./as1 <test/tmp2.s >test/tmp2.o
+    ./as2 test/tmp2.o >test/tmp2
+    if ! cmp test/tmp1 test/tmp2; then
+        echo failed $1 >&2
+        echo expected:
+        hexdump test/tmp1 -C >&2
+        echo got:
+        hexdump test/tmp2 -C >&2
+        exit
+    fi
+}
+
+echo test math0...
+
+tools/com "$math0" "$reg1" "," "$reg1" >test/tmp1.asm
+tools/com "$math0" "%b" "$reg1" "," "$reg1" >test/tmp2.s
+run_test "math0 rb, rb"
+tools/com "$math0" "$reg1" "," "[" "$mem_nasm" "]" >test/tmp1.asm
+tools/com "$math0" "%b" "$reg1" "," "(" "$mem_asm" ")" >test/tmp2.s
+run_test "math0 rb, mb"
+tools/com "$math0" "$reg2" "," "$reg2" >test/tmp1.asm
+tools/com "$math0" "$reg2" "," "$reg2" >test/tmp2.s
+run_test "math0 rw, rw"
+tools/com "$math0" "$reg1" "," "$imm1" >test/tmp1.asm
+tools/com "$math0" "%b" "$reg1" "," "$imm1" >test/tmp2.s
+run_test "math0 rb, ib"
+tools/com "$math0" "$reg2" "," "$imm2" >test/tmp1.asm
+tools/com "$math0" "$reg2" "," "$imm2" >test/tmp2.s
+run_test "math0 rw, iw"
+tools/com "$math0" "$reg2" "," "$imm1" >test/tmp1.asm
+tools/com "$math0" "$reg2" "," "$imm1" >test/tmp2.s
+run_test "math0 rw, ib"
+
+echo test math1...
+
+tools/com "$math1" "$reg1" "," "$imm1" >test/tmp1.asm
+tools/com "$math1" "%b" "$reg1" "," "$imm1" >test/tmp2.s
+run_test "math1 rb, ib"
+tools/com "$math1" "$reg2" "," "$imm1" >test/tmp1.asm
+tools/com "$math1" "$reg2" "," "$imm1" >test/tmp2.s
+run_test "math1 rw, ib"
+tools/com "$math1" "$reg1" "," "cl" >test/tmp1.asm
+tools/com "$math1" "%b" "$reg1" "," "cl" >test/tmp2.s
+run_test "math1 rb, cl"
+tools/com "$math1" "$reg2" "," "cl" >test/tmp1.asm
+tools/com "$math1" "$reg2" "," "cl" >test/tmp2.s
+run_test "math1 rw, cl"
+
+echo test math2...
+
+tools/com "$math2" "$reg2" >test/tmp1.asm
+tools/com "$math2" "$reg2" >test/tmp2.s
+run_test "math2 rw"
+tools/com "$math2" "$reg1" >test/tmp1.asm
+tools/com "$math2" "%b" "$reg1" >test/tmp2.s
+run_test "math2 rb"
+
+echo test math3...
+
+tools/com "$math3" "$reg2" >test/tmp1.asm
+tools/com "$math3" "$reg2" >test/tmp2.s
+run_test "math3 rw"
+
+echo test math4...
+
+tools/com "$math4" "$reg2" "," "$imm2" >test/tmp1.asm
+tools/com "$math4" "$reg2" "," "$imm2" >test/tmp2.s
+run_test "math4 rw, iw"
+tools/com "$math4" "$reg1" "," "$imm1" >test/tmp1.asm
+tools/com "$math4" "%b" "$reg1" "," "$imm1" >test/tmp2.s
+run_test "math4 rb, ib"
+tools/com "$math4" "$reg1" "," "$reg1" >test/tmp1.asm
+tools/com "$math4" "%b" "$reg1" "," "$reg1" >test/tmp2.s
+run_test "math4 rb, rb"
+tools/com "$math4" "$reg2" "," "$reg2" >test/tmp1.asm
+tools/com "$math4" "$reg2" "," "$reg2" >test/tmp2.s
+run_test "math4 rw, rw"
+
+echo test math5...
+
+tools/com "$math5" "$reg2" "," "$reg2" >test/tmp1.asm
+tools/com "$math5" "$reg2" "," "$reg2" >test/tmp2.s
+run_test "math5 rw, rw"
+tools/com "$math5" "$reg2" "," "$imm2" >test/tmp1.asm
+tools/com "$math5" "$reg2" "," "$imm2" >test/tmp2.s
+run_test "math5 rw, iw"
+tools/com "$math5" "$reg2" "," "$reg2" "," "$imm2" >test/tmp1.asm
+tools/com "$math5" "$reg2" "," "$reg2" "," "$imm2" >test/tmp2.s
+run_test "math5 rw, rw, iw"
+
+echo test stck0...
+
+tools/com "$stck0" "$reg2" >test/tmp1.asm
+tools/com "$stck0" "$reg2" >test/tmp2.s
+run_test "stck0 rw"
+tools/com "$stck0" "$sreg" >test/tmp1.asm
+tools/com "$stck0" "$sreg" >test/tmp2.s
+run_test "stck0 sr"
+tools/com "$stck0" "word" "[" "$mem_nasm" "]" >test/tmp1.asm
+tools/com "$stck0" "(" "$mem_asm" ")" >test/tmp2.s
+run_test "stck0 mw"
+
+echo test stck1...
+
+tools/com "$stck1" "$imm2" >test/tmp1.asm
+tools/com "$stck1" "$imm2" >test/tmp2.s
+run_test "stck1 iw"
+
+echo test jump0...
+
+echo -e "dw 1\na:" >test/tmp1.asm
+tools/com "$jump0" "a b" >>test/tmp1.asm
+echo -e "b:" >>test/tmp1.asm
+echo -e "1; a:" >test/tmp2.s
+tools/com "$jump0" "a b" >>test/tmp2.s
+echo -e "b:" >>test/tmp2.s
+run_test "jump0 ib"
+
+
+echo test byte0...
+
+tools/com "$byte0" "%b" >test/tmp1.asm
+tools/com "$byte0" "%b" >test/tmp2.s
+run_test "byte1 b"
+tools/com "$byte0" "%w" >test/tmp1.asm
+tools/com "$byte0" >test/tmp2.s
+run_test "byte1 w"
+
+echo test byte1...
+
+tools/com "$byte1" >test/tmp1.asm
+tools/com "$byte1" >test/tmp2.s
+run_test "byte0"
+
+echo test mov...
+
+tools/com "mov" "$reg2" "," "$imm2" >test/tmp1.asm
+tools/com "mov" "$reg2" "," "$imm2" >test/tmp2.s
+run_test "mov rw, iw"
+tools/com "mov" "$reg1" "," "$imm1" >test/tmp1.asm
+tools/com "mov" "%b" "$reg1" "," "$imm1" >test/tmp2.s
+run_test "mov rb, ib"
+tools/com "mov" "$sreg" "," "$reg2" >test/tmp1.asm
+tools/com "mov" "$sreg" "," "$reg2" >test/tmp2.s
+run_test "mov sr, rw"
+tools/com "mov" "$reg2" "," "$sreg" >test/tmp1.asm
+tools/com "mov" "$reg2" "," "$sreg" >test/tmp2.s
+run_test "mov rw, sr"
+

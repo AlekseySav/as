@@ -1,0 +1,18 @@
+#!/bin/python3
+# put all possible combinations
+
+import sys
+
+def all(s: str, d: dict):
+    return [s + (i[1:] if i[0] == '%' else ' ' + i) for i in d]
+
+def com(arg):
+    if arg >= len(sys.argv):
+        return ['\n']
+    res = []
+    prev = com(arg + 1)
+    for i in sys.argv[arg].split():
+        res += all(i, prev)
+    return res
+
+print(*com(1))

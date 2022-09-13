@@ -1,0 +1,106 @@
+#!/bin/python3
+
+import yaml
+import sys
+import re
+
+
+def tok(n: str) -> int:
+    for p, use in input['pattern'].items():
+        if re.match(p, n):
+            for i, c in enumerate(n):
+                use = use.replace(f'${i+1}', str(ord(c)))
+            return eval(use)
+
+
+def unpack(n: int, c: str, s: str):
+    s = s.replace('$operator', c)
+    for i in range(n):
+        t = 'abcdefghi'[i]
+        s = s.replace(f'${t}', f'(*(q - {n - i - 1}))')
+    return s
+
+
+with open(sys.argv[1]) as file:
+    input: dict = yaml.load(file, Loader=yaml.FullLoader)
+
+prec = [0 if i else 0x3f for i in range(256 + len(input['prefix']))]
+brak: list[str] = []
+bin_actions: dict[int, (str, str)] = {}
+
+for i, v in input['brackets'].items():
+    prec[tok(i)] = 0x80 + len(brak)
+    brak.append('\'' + v + '\'')
+
+for i, v in input['binary']['operators'].items():
+    id = tok(i)
+    if isinstance(v, int):
+        prec[id] = v
+        bin_actions[id] = i, input['binary']['default-action']
+    else:
+        prec[id] = v[0]
+        bin_actions[id] = i, v[1]
+
+for i in input['prefix']['operators']:
+    prec[tok(i)] |= 0x40
+
+nl2t = "\n\t\t"
+
+print(f'''
+#include "as.h"
+
+{input["enter"]}
+
+static unsigned char brak[] = {{ {", ".join(brak)} }};
+static unsigned char prec[] = {{ {", ".join(map(str, prec))} }};
+
+static {input["value"]["type"]} result[100], * q;
+static unsigned char stack[100], * s;
+
+static void apply(bool un, unsigned char c) {{
+    if (un) switch (c) {{
+        {nl2t.join("case " + str(tok(i)) + ": " + unpack(1, i, input['prefix']['default-action']) + " return;" for i in input['prefix']['operators'])}
+    }}
+    else switch (c) {{
+        {nl2t.join("case " + str(i) + ": " + unpack(2, j[0], j[1]) + " q--; return;" for i, j in bin_actions.items())}
+    }}
+}}
+
+static void flush(int p) {{
+    bool un;
+    while ((prec[*s] & 0x3f) <= p) {{
+        if (un = *s == 0xff) s--;
+        apply(un, *s--);
+    }}
+}}
+
+static void do_eval(int end) {{
+    *++s = 0;
+    bool expect_bin = false;
+    for (;;) {{
+        int t = lex();
+        if (prec[t] & 0x80) do_eval(brak[prec[t] & 0x7f]);
+        else if ({" || ".join("t == " + i for i in input["value"]["lex"].split())}) {{
+            if (expect_bin) error("repeated value");
+            expect_bin = true;
+            unlex();
+            {input["value"]["read"]}(++q);
+        }}
+        else if (!expect_bin && prec[t] & 0x40) *++s = t, *++s = 0xff;
+        else if (expect_bin && prec[t] & 0x7f) expect_bin = false, flush(prec[t] & 0x3f), *++s = t;
+        else {{
+            if (!end) unlex();
+            else if (t != end) error("bad bracket balance");
+            break;
+        }}
+    }}
+    flush(0x3e);
+    s--;
+}}
+
+{input["value"]["type"]} {input["name"]}(void) {{
+    q = result, s = stack;
+    do_eval(0);
+    if (q != result + 1) error("too many values");
+    return *q;
+}}''')

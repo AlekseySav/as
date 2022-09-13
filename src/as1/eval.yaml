@@ -1,0 +1,61 @@
+name:     eval
+enter:    "#define err error(\"bad expression\")"
+
+value:
+  type:   struct value
+  read:   value
+  lex:    "'\\0' '\\''"
+
+brackets:
+  "[":    "]"
+
+prefix:
+  operators:
+    - "!"
+    - "~"
+    - "+"
+    - "-"
+  default-action:
+    $a .constant = $operator $a .constant;
+    if ($a .filerel || !$a .defined)
+      err;
+
+binary:
+  operators:
+    "||":   7
+    "&&":   6
+    "==":   5
+    "!=":   5
+    ">=":   5
+    "<=":   5
+    "+":
+      - 5
+      - $a .constant += $b .constant;
+        if (!$a .defined || !$b .defined || $a .filerel && $b .filerel)
+          err;
+        if ($b .filerel) $a .filerel = true;
+    "-":
+      - 4
+      - $a .constant -= $b .constant;
+        if (!$a .defined || !$b .defined || !$a .filerel && $b .filerel)
+          err;
+        if ($a .filerel && $b .filerel) $a .filerel = false;
+    "/":    3
+    "*":    3
+    "%":    3
+    "|":    2
+    "^":    2
+    "&":    2
+    "<<":   1
+    ">>":   1
+  default-action:
+    $a .constant = $a .constant $operator $b .constant;
+    if ($a .filerel || $b .filerel || !$a .defined || !$b .defined)
+      err;
+
+pattern:
+  "!=":     "1"
+  "<=":     "2"
+  ">=":     "3"
+  ".{2}":   "$1 | 0x80"
+  ".":      "$1"

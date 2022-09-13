@@ -1,0 +1,33 @@
+#!/bin/bash
+
+echo test expr...
+
+tests=$(cat<<EOF
+\$e 15
+\$e .
+bioschar = 0x0e; \$e bioschar<<8|'0
+.=.+10; \$e .; \$e .-..
+label:  \$e label+5; \$e label-5
+EOF
+)
+
+assert=$(cat<<EOF
+15
+0+..
+3632
+10+..
+10
+15+..
+5+..
+EOF
+)
+
+data=$(./as1 <<< $tests 2>&1 1>/dev/null)
+
+if [ "$data" != "$assert" ]; then
+    echo failed >&2
+    echo expected:
+    echo "$assert" >&2
+    echo got:
+    echo "$data" >&2
+fi

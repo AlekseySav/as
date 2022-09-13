@@ -1,0 +1,122 @@
+#!/bin/python3
+# generate c code for opcodes.yaml
+
+import yaml
+import sys
+
+cur_siz = 'ARG_DEFAULT'
+def_siz = 'ARG_DEFSIZ'
+b08_siz = 'ARG_BYTE'
+b16_siz = '0'
+
+mnemonics = {
+    'mm': f'ARG_MEM',
+    'sr': f'ARG_SEG',
+
+    'r!': f'ARG_RR1 | ARG_RR2 | {def_siz}',
+    'rr': f'ARG_RR1 | ARG_RR2',
+    'r1': f'ARG_RR1',
+    'r2': f'ARG_RR2',
+    
+    'm!': f'ARG_REG | ARG_MEM | {def_siz}',
+    'rm': f'ARG_REG | ARG_MEM',
+    'm1': f'ARG_RR1 | ARG_MEM',
+    'm2': f'ARG_RR2 | ARG_MEM',
+    
+    'i2': f'ARG_IMM | {b16_siz}',
+    'i1': f'ARG_IMM | {b08_siz} | ARG_SIGN',
+    'a1': f'ARG_IMM | {b08_siz} | ARG_SIGN | ARG_UNSIGN',
+    'im': f'ARG_IMM | {cur_siz} | ARG_SIGN | ARG_UNSIGN',
+    'u1': f'ARG_IMM | {b08_siz} | ARG_UNSIGN',
+    'um': f'ARG_IMM | {cur_siz} | ARG_UNSIGN'
+}
+
+regs1 = ['al', 'cl', 'dl', 'bl', 'ah', 'bh', 'ch', 'dh']
+regs2 = ['ax', 'cx', 'dx', 'bx', 'sp', 'bp', 'si', 'di']
+
+
+def arg(ss: str):
+    x = ''
+    if ss[-1] == '*':
+        ss = ss[:-1]
+        x = 'ARG_VAARG | '
+    if ss in mnemonics:
+        x += mnemonics[ss]
+    if ss in regs1:
+        x += f'ARG_REG1({regs1.index(ss)})'
+    if ss in regs2:
+        x += f'ARG_REG2({regs2.index(ss)})'
+    return x
+
+
+def put_opcodes(name: str, opcodes: dict, append: str):
+    print(f'static struct opcode_mapper {name}[] = {{')
+    opcodes = enumerate(map(lambda x: x + append, opcodes))
+    opcodes = sorted(opcodes, key=lambda x: x[1])
+    for k, v in opcodes:
+        print(f'\t{{ "{v}", {k} }},')
+    print('};')
+
+
+def nrz(x):
+    x = list(x.split(' '))
+    if len(x) == 1:
+        x.append('0')
+    else:
+        x = [x[0], '0x' + x[-1]]
+    return ', '.join(x)
+
+
+with open(sys.argv[1]) as file:
+    input: dict = yaml.load(file, Loader=yaml.FullLoader)
+
+opcodes = {k: v for k, v in sorted(input['opcodes'].items())}
+input.pop('opcodes')
+
+print('#include "as.h"\n#define b (size = 0)\n#define w (size = 1)')
+
+for n, v in input.items():
+    end = 'error("not found")'
+    if 'extends' in v:
+        end = f'opcode_{v["extends"]}(n)'
+        v.pop('extends')
+    print(f'static void opcode_{n}(int n) {{')
+    for xflags, code in v.items():
+        code = code.replace('\\', '')
+        for yflags in xflags.split('|'):
+            flags = yflags.strip().split(' ')
+            size, args = 'ubw'.find(flags[0]), flags[1:]
+            print(f'\tif ('
+                  f'(!{size} || size == {size-1}) && '
+                  f'cmpargs({", ".join([str(len(args)), *map(arg, args)])})) '
+                  f'{{ \n\t\t{code}; \n\t\treturn;\n\t}}')
+    print(f'\t{end};\n}}\n')
+
+j1 = ' }, \n\t{ opcode_'
+
+print('struct opcode_mapper { char name[8]; int group; };')
+put_opcodes('opcodes1', opcodes.keys(), 'b')
+put_opcodes('opcodes2', opcodes.keys(), '')
+
+print(f'''static struct opcode opcode_table[] = {{
+    {{ opcode_{j1.join(map(nrz, opcodes.values()))} }}
+}};''')
+
+print(f'''
+static int opcode_search(const char* str, struct opcode_mapper* map) {{
+    int l = 0, h = {len(opcodes)} - 1, m, r;
+    while (l <= h) {{
+        m = (l + h) / 2;
+        if (!(r = strcmp(str, map[m].name))) return map[m].group;
+        if (r < 0) h = m - 1;
+        else l = m + 1;
+    }}
+    return -1;
+}}
+
+struct opcode* opcode(const char* str, int* size) {{
+    int n;
+    if ((n = opcode_search(str, opcodes2)) >= 0) return *size = 1, &opcode_table[n];
+    if ((n = opcode_search(str, opcodes1)) >= 0) return *size = 0, &opcode_table[n];
+    return NULL;
+}}''')
