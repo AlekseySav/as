@@ -18,11 +18,9 @@ test: as1 as2
 	@test/expr
 	@test/main
 
-run: as1 as2
-	@./as1 <boot.s >boot.o && ./as2 boot.o >boot
-	@./as1 <kern.s >kern.o && ./as2 kern.o >kern
-	@cat boot kern >1
-	@rm boot kern
+run: as1 as2 tmp/boot tmp/kern
+	@cat tmp/boot tmp/kern >1
+	@rm tmp/boot tmp/kern
 	@truncate -s 32K 1
 	@qemu-system-x86_64 1
 	@hexdump -C 1
@@ -35,3 +33,6 @@ src/as1/eval.c: tools/eval src/as1/eval.yaml
 
 src/as1/opcodes.c: tools/opcodes src/as1/opcodes.yaml
 	$^ >$@
+
+%: %.s
+	tools/as $< $@

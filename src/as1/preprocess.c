@@ -36,6 +36,7 @@ static void do_proc(int n) {
     unlex();
     parse();
     putb(0x5e); /* pop si */
+    putb(0xfc); /* cld */
     endline();
 }
 

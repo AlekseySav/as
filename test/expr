@@ -8,6 +8,7 @@ tests=$(cat<<EOF
 bioschar = 0x0e; \$e bioschar<<8|'0
 .=.+10; \$e .; \$e .-..
 label:  \$e label+5; \$e label-5
+\$e 'a-'a; \$e '1-'0
 EOF
 )
 
@@ -19,6 +20,8 @@ assert=$(cat<<EOF
 10
 15+..
 5+..
+0
+1
 EOF
 )
 

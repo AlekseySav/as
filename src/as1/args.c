@@ -34,18 +34,16 @@ static inline int sreg(const char* name) {
 }
 
 static int get_modrm(struct value* disp) {
-    int rm = 1;
+    int rm = 1, tmp;
     for (;;) {
-        if (lex()) error("expected value");
-        int tmp = gpreg(lbuf);
-        if (tmp != -1) rm = rm << 3 | tmp;
+        if (!lex() && (tmp = gpreg(lbuf)) != -1)
+            rm = rm << 3 | tmp;
         else {
-            if (!disp) error("double displacement in mod r/m byte");
             unlex();
+            if (!disp) error("double displacement in mod r/m byte");
             *disp = eval();
             disp = NULL;
         }
-        if (rm > 0177) error("too many registers in mod r/m byte");
         if (trylex(')')) break;
         if (lex() != ',') error("expected ','");
     }

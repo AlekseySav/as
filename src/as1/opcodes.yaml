@@ -136,6 +136,8 @@ opcodes:
   je:         jump0 74
   jz:         jump0 74
   jne:        jump0 75
+  jnz:        jump0 75
+  jbe:        jump0 76
   jna:        jump0 76
   ja:         jump0 77
   js:         jump0 78

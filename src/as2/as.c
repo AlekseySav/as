@@ -35,8 +35,10 @@ static void readfile(const char* filename, int n) {
         if (!sym.islocal && !n) continue;
         struct symbol* s = lookup(sym.name);
         if (s->defined && sym.defined) error(0, "symbol '%s' redefined", s->name);
-        if (!s->defined || sym.defined)
+        if (!s->defined || sym.defined) {
             memcpy(s, &sym, sym_size(&sym));
+            if (s->filerel) s->value += textsize;
+        }
     }
     short rel = 0;
     while (rel < exec.reloc) {

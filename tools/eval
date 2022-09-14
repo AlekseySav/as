@@ -79,7 +79,11 @@ static void do_eval(int end) {{
     bool expect_bin = false;
     for (;;) {{
         int t = lex();
-        if (prec[t] & 0x80) do_eval(brak[prec[t] & 0x7f]);
+        if (prec[t] & 0x80) {{
+            if (expect_bin) error("repeated value");
+            expect_bin = true;
+            do_eval(brak[prec[t] & 0x7f]);
+        }}
         else if ({" || ".join("t == " + i for i in input["value"]["lex"].split())}) {{
             if (expect_bin) error("repeated value");
             expect_bin = true;
