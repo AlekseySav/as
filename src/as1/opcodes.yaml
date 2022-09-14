@@ -15,6 +15,7 @@ mov:
               else putb(0x88 | size), put_rm(rr)
   u r! rm:    if (rr == 0 && modrm == 6) putb(0xa0 | size), put_rm(-1);
               else putb(0x8a | size), put_rm(rr)
+  u m! i2:    putb(0xc6 | size), put_rm(0), put_im(1)
 
 xchg:
   w ax rr | w rr ax: putb(0x90 | rr)
@@ -133,6 +134,7 @@ opcodes:
   jc:         jump0 72
   jnb:        jump0 73
   jnc:        jump0 73
+  jae:        jump0 73
   je:         jump0 74
   jz:         jump0 74
   jne:        jump0 75

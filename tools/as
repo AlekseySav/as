@@ -1,3 +1,12 @@
 #!/bin/bash
 
-./as1 <$1 >a.out && ./as2 a.out >$2 && rm a.out
+x=""
+
+for i in "$@"; do
+    ./as1 <$i >$i.tmp
+    x="$x $i.tmp"
+done
+
+./as2 $x
+
+# rm $x

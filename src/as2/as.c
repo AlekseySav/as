@@ -6,6 +6,9 @@ static struct reloc relocs[60000];
 static int nrelocs;
 static char text[64 * 1024];
 
+static struct symbol* filesyms[4000];
+static int nfilesyms;
+
 void error(short at, const char* msg, ...) {
     va_list ap;
     va_start(ap, msg);
@@ -18,27 +21,31 @@ void error(short at, const char* msg, ...) {
 
 static void readfile(const char* filename, int n) {
     FILE* f;
+    nfilesyms = 0;
     if (!(f = fopen(filename, "rt"))) perror("");
     if (!fread(&exec, sizeof(struct exec), 1, f)) perror("");
     fread(text, 1, exec.text, f);
+    if (exec.text % 2) getc(f);
     if (n == 0) fwrite(text, 1, exec.text, stdout);
     short syms = 0;
     while (syms < exec.syms) {
         struct symbol sym;
         fread(&sym, 1, sizeof(sym), f);
         syms += 12;
+        nfilesyms++;
         if (sym.isshort) {
             syms += sym_size(&sym) - sizeof(struct symbol);
             fseek(f, sym_size(&sym) - sizeof(struct symbol), SEEK_CUR);
         }
-        if (sym.islocal && n) continue;
+        if (sym.islocal && sym.defined && n) continue;
         if (!sym.islocal && !n) continue;
         struct symbol* s = lookup(sym.name);
         if (s->defined && sym.defined) error(0, "symbol '%s' redefined", s->name);
-        if (!s->defined || sym.defined) {
+        if (!s->defined) {
             memcpy(s, &sym, sym_size(&sym));
             if (s->filerel) s->value += textsize;
         }
+        filesyms[nfilesyms - 1] = s;
     }
     short rel = 0;
     while (rel < exec.reloc) {
@@ -52,8 +59,9 @@ static void readfile(const char* filename, int n) {
 
 static void relocate(int n) {
     for (struct reloc* r = relocs; r < &relocs[nrelocs]; r++) {
-        struct symbol* s = symbol(r->sym);
+        struct symbol* s = filesyms[r->sym];
         if (!s->name[0]) continue;
+        if (!n && !s->defined) continue;
         if (!s->defined) error(r->ptr, "reference to undefined symbol");
         if (s->mutable) error(r->ptr, "reference to mutable symbol");
         fseek(stdout, r->ptr, SEEK_SET);

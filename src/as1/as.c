@@ -16,7 +16,7 @@ void put_const(int v, int size) {
 }
 
 static inline noreturn void quit(void) {
-    if (textsize % 2) putb(0), pc->value++;
+    if (textsize % 2) putchar(0);
     int s = flush_syms();
     int r = flush_relocs();
     struct exec e = {

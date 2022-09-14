@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo test linking...
+
+cat >test/tmp1.s <<EOF
+jmp     hello
+EOF
+
+cat >test/tmp2.s <<EOF
+0x1234
+.global hello
+hello:
+EOF
+
+./as1 <test/tmp1.s >test/tmp1.o
+./as1 <test/tmp2.s >test/tmp2.o
+./as2 test/tmp1.o test/tmp2.o >test/tmp
+
+echo tests not implemented yet >&2

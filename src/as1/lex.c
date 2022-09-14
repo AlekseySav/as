@@ -81,6 +81,8 @@ char lexch(bool* escaped) {
         case 't': return '\t';
         case 'r': return '\r';
         case 'b': return '\b';
+        case 's': return ' ';
+        case 'e': return '\033';
         case '>': return '>';
         default:  error("bad esc-char");
     }

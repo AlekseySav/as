@@ -6,7 +6,6 @@
 
 static struct symbol symtab[SYMSIZE];
 static struct symbol* hshed[SYMSIZE];
-static struct symbol* f[10], * b[10];
 static int nsyms;
 
 static inline unsigned hash(const char* s) {
@@ -33,12 +32,4 @@ void clearsyms(void) {
     memset(hshed, 0, SYMSIZE * sizeof(struct symbol*));
     memset(symtab, 0, nsyms * sizeof(struct symbol));
     nsyms = 0;
-}
-
-int symid(struct symbol* s) {
-    return s - symtab;
-}
-
-struct symbol* symbol(int id) {
-    return &symtab[id];
 }

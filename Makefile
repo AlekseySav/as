@@ -16,6 +16,7 @@ as2: $(as2o)
 
 test: as1 as2
 	@test/expr
+	@test/link
 	@test/main
 
 run: as1 as2 tmp/boot tmp/kern
@@ -35,4 +36,7 @@ src/as1/opcodes.c: tools/opcodes src/as1/opcodes.yaml
 	$^ >$@
 
 %: %.s
-	tools/as $< $@
+	tools/as $< >$@
+
+tmp/kern: tmp/kern.s tmp/console.s
+	tools/as $^ >$@
