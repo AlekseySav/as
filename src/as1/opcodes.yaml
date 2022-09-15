@@ -80,7 +80,7 @@ retn0:
 
 port0:
   u:          putb(0xec | n | size)
-  u u1:       putb(0xe4 | n | size), putb_im(0)
+  u i2:       putb(0xe4 | n | size), put_im(0)
 
 byte0:
   u:          putb(n | size)

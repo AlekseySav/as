@@ -53,6 +53,7 @@ void parse(void);
 void endline(void);
 
 /* debug.c */
+extern bool autoglobal;
 void debug_command(void);
 
 /* preprocess.c */

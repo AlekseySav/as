@@ -37,7 +37,7 @@ struct symbol* lookup(const char* name) {
     e = hshed[n] = &symtab[nsyms++];
     if (strlen(name) <= 2) e->isshort = true;
     strncpy(e->name, name, sym_len(e));
-    e->islocal = true;
+    if (!autoglobal) e->islocal = true;
     return e;
 }
 
@@ -60,8 +60,10 @@ int flush_syms(void) {
     int size = 0;
     for (int i = 0; i < 10; i++)
         if (f[i]) error("short symbol (f) not defined");
-    for (struct symbol* e = symtab; e < &symtab[nsyms]; e++)
-        size += fwrite(e, 1, sym_size(e), stdout);
+    for (struct symbol* e = symtab; e < &symtab[nsyms]; e++) {
+        int i = strlen(e->name) + sizeof(struct symbol) - 7;
+        size += fwrite(e, 1, i < sym_size(e) ? i : sym_size(e), stdout);
+    }
     return size;
 }
 

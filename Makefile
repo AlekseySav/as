@@ -38,5 +38,5 @@ src/as1/opcodes.c: tools/opcodes src/as1/opcodes.yaml
 %: %.s
 	tools/as $< >$@
 
-tmp/kern: tmp/kern.s tmp/console.s
+tmp/kern: tmp/kern.s tmp/console.s tmp/data.s
 	tools/as $^ >$@

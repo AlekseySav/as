@@ -2,8 +2,13 @@
 
 #include "../as.h"
 
+struct ex_reloc {
+    struct reloc r;
+    struct symbol* s;
+};
+
 /* sym.c */
-struct symbol* lookup(const char* name);
+struct symbol* lookup(int g, const char* name);
 void clearsyms(void);
 
 /* as.c */

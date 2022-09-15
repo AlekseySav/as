@@ -2,6 +2,8 @@
 
 #define eprint(fmt, ...) fprintf(stderr, fmt __VA_OPT__(,) __VA_ARGS__)
 
+bool autoglobal;
+
 void debug_command(void) {
     bool esc;
     char c;
@@ -15,6 +17,9 @@ void debug_command(void) {
         case 'v': case 'r':
             v = eval();
             put_value(&v, c == 'r', 1);
+            break;
+        case 'g':
+            autoglobal = !autoglobal;
             break;
         default:
             error("$ <unknown>");
