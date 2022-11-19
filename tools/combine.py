@@ -11,7 +11,7 @@ def recursive(i):
     if i == len(sys.argv):
         return ['']
     x = recursive(i + 1)
-    return [x1 + x2 for x1 in sys.argv[i].split('/') for x2 in x]
+    return [x1 + x2 for x1 in sys.argv[i].split('|') for x2 in x]
 
 start = 1
 

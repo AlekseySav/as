@@ -111,6 +111,7 @@ bool assem(void);
 /*
  * as17-arg.c
  */
+#define modrm_disp_len(modrm) (((modrm) == 6 || ((modrm) >> 6 == 2)) ? 2 : (((modrm) >> 6 == 1) ? 1 : 0))
 enum arg arg(enum arg mask, struct arg_value* v);
 enum arg next_arg(enum arg mask, struct arg_value* v);
 void put_modrm(struct arg_value* mod, char rr, bool disponly);
@@ -141,6 +142,10 @@ void o_math2(int n);
 void o_test(int n);
 void o_incdec(int n);
 void o_stack(int n);
+void o_ret(int n);
+void o_inout(int n);
+void o_move(int n);
+void o_xchg(int n);
 
 /*
  * as19-main.c

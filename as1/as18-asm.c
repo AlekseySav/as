@@ -3,16 +3,18 @@
 static enum arg a1, a2;
 static struct arg_value v1, v2;
 
+bool sreg_is_ok;
+
 #define A_BYTEMASK ((size ? A_RM : A_MB) | A_IM)
 #define A_SIZEMASK ((size ? A_MW : A_MB) | A_IM)
 
 #define one_arg \
-    a1 = arg(A_BYTEMASK ^ A_IM, &v1); \
+    a1 = arg(A_BYTEMASK ^ A_IM | (sreg_is_ok ? A_SR : 0), &v1); \
     if (a1 & A_RB) size = 0; \
 
 #define two_args \
     one_arg \
-    a2 = next_arg(A_BYTEMASK, &v2); \
+    a2 = next_arg(A_BYTEMASK | (sreg_is_ok ? A_SR : 0), &v2); \
     if (a1 & A_MM && a2 & A_MM) error("too many memory operands"); \
     if (a1 & A_RB && a2 & A_RW || a1 & A_RW && a2 & A_RB) \
         error("registers of different sizes"); \
@@ -106,4 +108,50 @@ void o_stack(int n) {
     if (n == 0)
         return putbyte(0xff), put_modrm(&v1, 6, false);
     putbyte(0x8f), put_modrm(&v1, 0, false);
+}
+
+void o_ret(int n) {
+    if (trylex(';')) return putbyte(n + 1);
+    arg(A_IW, &v1);
+    putbyte(n);
+    put_value(v1.value, false, 1);
+}
+
+void o_inout(int n) {
+    if (trylex(';')) return putbyte(0xe4 | 8 | n | size);
+    arg(A_IM, &v1);
+    putbyte(0xe4 | n | size);
+    put_value(v1.value, false, 0);
+}
+
+void o_move(int n) {
+    sreg_is_ok = true;
+    two_args
+    sreg_is_ok = false;
+    if (a2 & A_IM) {
+        if (a1 & A_RR)
+            return putbyte(0xb0 | size << 3 | v1.reg), put_value(v2.value, false, size);
+        return putbyte(0xc6 | size), put_modrm(&v1, 0, false), put_value(v2.value, false, size);
+    }
+    int adj = 0;
+    if (a2 & A_MM || a1 & A_SR) {
+        adj = 2;
+        swap_args;
+    }
+    if (a2 & A_SR)
+        return putbyte(0x8c | adj), put_modrm(&v1, v2.reg, false);
+    if (a2 & A_RR && v2.reg == 0 && a1 & A_MM && v1.modrm == 6)
+        return putbyte(0xa0 | 2 - adj | size), put_modrm(&v1, 0, true);
+    putbyte(0x88 | adj | size), put_modrm(&v1, v2.reg, false);
+}
+
+void o_xchg(int n) {
+    two_args
+    if (a2 & A_IM) error("cannot use immediate value as xchg arg");
+    if (a1 & A_RW && a2 & A_RW && v1.reg == 0)
+        return putbyte(0x90 | v2.reg);
+    if (a1 & A_RW && a2 & A_RW && v2.reg == 0)
+        return putbyte(0x90 | v1.reg);
+    if (a1 & A_MM) swap_args;
+    putbyte(0x86 | size), put_modrm(&v2, v1.reg, false);
 }

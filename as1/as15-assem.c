@@ -73,5 +73,5 @@ void (*opcodes[I_N_OPCODES])(int n) = {
     chsize,
     o_onebyte, o_string, o_argbyte, o_segment, o_sys,
     o_math0, o_math1, o_math2, o_test, o_incdec,
-    o_stack
+    o_stack, o_ret, o_inout, o_move, o_xchg
 };

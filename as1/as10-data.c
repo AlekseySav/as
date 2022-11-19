@@ -150,5 +150,19 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
     { "pushb",      X_CHSIZE            },
     { "pop",        O_STACK,    1       },
 
+    { "ret",        O_RET,      0xc2    },
+    { "retf",       O_RET,      0xca    },
+    
+    { "in",         O_INOUT,    0       },
+    { "inb",        X_CHSIZE,           },
+    { "out",        O_INOUT,    2       },
+    { "outb",       X_CHSIZE,           },
+
+    { "mov",        O_MOVE              },
+    { "movb",       X_CHSIZE            },
+
+    { "xchg",       O_XCHG              },
+    { "xchgb",      X_CHSIZE            },
+
     { NULL }
 };
