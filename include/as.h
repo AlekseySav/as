@@ -13,6 +13,7 @@ enum builtins {
     O_MATH0, O_MATH1, O_MATH2, O_TEST, O_INCDEC,
     O_STACK, O_RET, O_INOUT, O_MOVE, O_XCHG,
     O_CJUMP, O_CBRANCH, O_JUMP,
+    O_ASCII, 
     I_N_OPCODES
 };
 

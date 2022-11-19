@@ -55,6 +55,7 @@ extern struct exec exec;
 extern struct file current_file;
 extern struct x_symbol* dot, * ddot; // . and .. symbols
 extern struct x_symbol symbol_pool[SYMTAB_MAX_SIZE];
+extern void (*opcodes[I_N_OPCODES])(int n);
 
 /*
  * as11-io.c
@@ -104,7 +105,8 @@ void put_value(struct value v, bool pc_rel, int size_log);
  * as15-assem.c
  */
 extern bool size; // =1 if word, =0 if byte
-extern void (*opcodes[I_N_OPCODES])(int n);
+void bad_opcode(int n);
+void x_chsize(int n);
 void assign(struct x_symbol* sym, struct value value);
 bool assem(void);
 
@@ -146,6 +148,10 @@ void o_ret(int n);
 void o_inout(int n);
 void o_move(int n);
 void o_xchg(int n);
+void o_cjump(int n);
+void o_cbranch(int n);
+void o_jump(int n);
+void o_ascii(int n);
 
 /*
  * as19-main.c

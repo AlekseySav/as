@@ -13,13 +13,17 @@ immb_as="*0|*1|*2|*3|*4|*5|*10|*40|*100|*120|*-55|*-5|*-1"
 ummb="0|1|2|3|4|5|10|40|100|120|200|250|255"
 ummb_as="*0|*1|*2|*3|*4|*5|*10|*40|*100|*120|*200|*250|*255"
 
-immw="$immb|1000|2000|3000|4000|10000|30000|50000|65535"
-immw_as="$immb_as|1000|2000|3000|4000|10000|30000|50000|*-1"
+immw_only="1000|2000|3000|4000|10000|30000|50000"
+immw="$immb|$immw_only"
+immw_as="$immb_as|1000|2000|3000|4000|10000|30000|50000"
 ummw="$ummb|1000|2000|3000|4000|10000|30000|50000|65535"
 ummw_as="$ummb_as|1000|2000|3000|4000|10000|30000|50000|65535"
 
 modrm="[bx+si]|[bx+di]|[bp+si]|[bp+di]|[si]|[di]|[10+bx+si]|[10+bx+di]|[10+bp+si]|[10+bp+di]|[10+si]|[10+di]|[10]|[500+bx+si]|[500+bx+di]|[500+bp+si]|[500+bp+di]|[500+si]|[500+di]|[500]"
 modrm_as="(bx_si)|(bx_di)|(bp_si)|(bp_di)|(si)|(di)|*10(bx_si)|*10(bx_di)|*10(bp_si)|*10(bp_di)|*10(si)|*10(di)|*(10)|500(bx_si)|500(bx_di)|500(bp_si)|500(bp_di)|500(si)|500(di)|(500)"
+
+branch="jb|jae|je|jne|jbe|ja|jl|jge|jle|jg"
+branch_as="blo|bhis|beq|bne|blos|bho|blt|bge|ble|bgt"
 
 rmb="$regb|$modrm"
 rmw="$regw|$modrm"
@@ -29,6 +33,7 @@ rmw_as="$regw|$modrm_as"
 run-nasm() {
     python3 tools/combine.py \
         "-r/*dx*/=dx" "-r/*ax*/=ax" "-r/*al*/=al" "-r/*,*/=," \
+        "-r.=$" "-r$branch_as=$branch" "-rj=jmp"\
         "$@" $'\n' >test/tmp/1.asm
     echo "times (\$-\$\$) % 2 db 0" >>test/tmp/1.asm
     nasm test/tmp/1.asm
@@ -37,23 +42,26 @@ run-nasm() {
 run-as() {
     python3 tools/combine.py \
         "-r$immb=$immb_as" "-r$immw=$immw_as" \
-        "-r$modrm=$modrm_as" \
+        "-r$modrm=$modrm_as" "-r:=," \
         "-r$rmb=$rmb_as" "-r$rmw=$rmw_as" \
         "$@" $'\n' >test/tmp/1.s
     bash test/tools/assem.sh test/tmp/1.s
 }
 
 run-test() {
+    nasm_size=""; as_size=""
+    nasm_far=""; as_far=""
     case $1 in
         b) nasm_size=" byte"; as_size="b" ;;
         B) nasm_size=" "; as_size="b" ;;
         w) nasm_size=" word"; as_size="" ;;
+        f) nasm_far=" far"; as_far="l" ;;
+        F) as_far="l" ;;
         b+) nasm_size=" byte| byte"; as_size="b|" ;;
-        *) nasm_size=""; as_size="";;
     esac
     opcode=$2; shift 2
-    run-nasm $opcode "$nasm_size" "$@"
-    run-as $opcode $as_size "$@"
+    run-nasm $opcode "$nasm_far" "$nasm_size" "$@"
+    run-as $as_far "$opcode" $as_size "$@"
     echo -n '.'
     cmp test/tmp/1 test/tmp/1.s.o
     if [ $? -ne 0 ]; then
@@ -66,7 +74,7 @@ ok() {
 }
 
 echo -n "onebyte"
-onebyte="pusha|popa|nop|cbw|cwd|pushf|popf|sahf|lahf|leave|int3|into|iret|xlat|repne|repe|rep|hlt|cmc|clc|stc|cli|sti|cld|std"
+onebyte="daa|das|aaa|aas|pusha|popa|nop|cbw|cwd|pushf|popf|sahf|lahf|leave|int3|into|iret|xlat|repne|repe|rep|hlt|cmc|clc|stc|cli|sti|cld|std"
 run-test - $onebyte
 ok
 
@@ -164,4 +172,27 @@ run-test b+ "xchg" " " $rmb , $regb
 run-test b+ "xchg" " " $regb , $modrm
 run-test w  "xchg" " " $rmw , $regw
 run-test w  "xchg" " " $regw , $modrm
+ok
+
+echo -n "cjump"
+cjump="jo|jno|jb|jnae|jc|jae|jnb|jnc|je|jz|jne|jnz|jbe|jna|ja|jnbe|js|jns|jp|jpe|jnp|jpo|jl|jge|jnl|jle|jng|jg|jnle|loopne|loope|loop|jcxz"
+run-test - $cjump " " $nostar_immb "+" "."
+ok
+
+echo -n "cbranch"
+run-test - $branch_as " " $immw_only "+" "."
+ok
+
+echo -n "jumps"
+run-test - "j" " " $nostar_immb "+" "."
+run-test - "jmp|call" " " $immw "+" "."
+run-test - "jmp|call" " " $immw_only ":" $immw_only
+run-test F "jmp|call" " " $immw_only ":" $immw_only
+run-test f "jmp|call" " " $modrm
+run-test - "jmp|call" " " $modrm
+ok
+
+echo -n "aam/aad"
+run-test - "aad|aam"
+run-test - "aad|aam" " " $imm_small
 ok

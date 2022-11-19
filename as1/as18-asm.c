@@ -155,3 +155,45 @@ void o_xchg(int n) {
     if (a1 & A_MM) swap_args;
     putbyte(0x86 | size), put_modrm(&v2, v1.reg, false);
 }
+
+void o_cjump(int n) {
+    putbyte(n);
+    arg(A_IW, &v1);
+    put_value(v1.value, true, 0);
+}
+
+void o_cbranch(int n) {
+    putbyte(0x0f);
+    putbyte(n);
+    arg(A_IW, &v1);
+    put_value(v1.value, true, 1);
+}
+
+// j jmp call ljmp lcall
+void o_jump(int n) {
+    a1 = arg(A_RM | A_IM, &v1);
+    if (a1 & A_IB) size = 0;
+    if (trylex(',')) {
+        a2 = arg(A_IW, &v2);
+        if (a1 != A_IW) error("bad far jump arguments");
+        putbyte(n <= 3 ? 0x9a : 0xea);
+        return put_value(v2.value, false, 1), put_value(v1.value, false, 1);
+    }
+    if (n > 3 && size == 0) {
+        if (!(a1 & A_IM)) error("bad short jump argument");
+        return putbyte(0xeb), put_value(v1.value, true, 0);
+    }
+    if (a1 & A_RM)
+        return putbyte(0xff), put_modrm(&v1, n, false);
+    if (n & 1) error("bad far jump");
+    putbyte(n <= 3 ? 0xe8 : 0xe9), put_value(v1.value, true, 1);
+}
+
+void o_ascii(int n) {
+    putbyte(0xd4 + n);
+    if (!trylex(';')) {
+        arg(A_IW, &v1);
+        put_value(v1.value, false, 0);
+    }
+    else putbyte(10);
+}

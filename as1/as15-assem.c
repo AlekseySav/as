@@ -1,10 +1,10 @@
 #include <as1.h>
 
-static void bad(int n) {
+void bad_opcode(int n) {
     error("bad opcode: %s", lval.sym->name);
 }
 
-static void chsize(int n) {
+void x_chsize(int n) {
     size = 0;
     lval.sym--;
     opcodes[lval.sym->builtin_id](lval.sym->value);
@@ -65,13 +65,3 @@ bool assem(void) {
     bytes_written = 0;
     return true;
 }
-
-void (*opcodes[I_N_OPCODES])(int n) = {
-    bad,
-    p_error, p_if, p_endif, p_segment, p_even, p_mut, p_byte, p_fill,
-    bad, bad, bad, bad,
-    chsize,
-    o_onebyte, o_string, o_argbyte, o_segment, o_sys,
-    o_math0, o_math1, o_math2, o_test, o_incdec,
-    o_stack, o_ret, o_inout, o_move, o_xchg
-};
