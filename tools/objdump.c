@@ -40,7 +40,7 @@ static void dump_file(const char* name) {
     fseek(f, A_STROFF(exec), SEEK_SET);
     fread(strtab, 1, exec.a_strtab, f);
     fseek(f, A_SYMOFF(exec), SEEK_SET);
-    fread(symtab, exec.a_symtab, 1, f);
+    fread(symtab, 1, exec.a_symtab, f);
 
     printf("symtab:\n");
     for (int i = 0; i < exec.a_symtab / sizeof(struct symbol); i++)

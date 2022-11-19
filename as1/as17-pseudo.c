@@ -46,7 +46,10 @@ void p_segment(int n) {
 }
 
 void p_even(int n) {
-    if (dot->value % 2) putbyte(0);
+    if (dot->value % 2) {
+        if (current_segment < 2) putbyte(0);
+        else dot->value++;
+    }
 }
 
 void p_mut(int n) {

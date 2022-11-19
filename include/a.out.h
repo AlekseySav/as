@@ -13,6 +13,7 @@ struct exec {
 
 #define A_OMAGIC        0xfeeb // object file, as1 output
 #define A_XMAGIC        0x0eeb // executable file, as2 output
+#define A_BADMAGIC(x)   ((x).a_magic != A_OMAGIC && (x).a_magic != A_XMAGIC)
 
 #define A_SEGSIZE(x, n) ((&(x).a_text)[n])
 
