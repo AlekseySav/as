@@ -9,3 +9,5 @@ fi
 if [[ $1 == "test" ]]; then
     .bin/as1
 fi
+
+gcc -Iinclude tools/objdump.c -o .bin/objdump

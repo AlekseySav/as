@@ -43,11 +43,24 @@ void do_assem(void) {
     put_value(expr(), false, 1);
 }
 
+static void put_string(void) {
+    bool esc;
+    char c;
+    while ((c = strchar(&esc)) != '>' || esc) {
+        if (c == '\n' && !esc) {
+            error("non-terminated string");
+            return;
+        }
+        putbyte(c);
+    }
+}
+
 bool assem(void) {
     if (trylex(L_EOF)) return false;
     if (trylex(';')) return assem();
     size = 1;
-    do_assem();
+    if (trylex('<')) put_string();
+    else do_assem();
     dot->value += bytes_written;
     bytes_written = 0;
     return true;

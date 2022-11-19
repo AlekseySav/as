@@ -2,6 +2,9 @@
 
 #include "a.out.h"
 
+#define SYMTAB_MAX_SIZE 3181    // including builtins, 3181 is prime
+#define STRTAB_MAX_SIZE 10000   // cannot be >16384 -- only 14 bits for name offset
+
 enum builtins {
     P_ERROR = 1, P_IF, P_ENDIF, P_SEGMENT, P_EVEN, P_MUT, P_BYTE, P_FILL,
     I_REGB, I_REGW, I_REGSUM, I_SREG,

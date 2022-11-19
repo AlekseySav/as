@@ -35,6 +35,7 @@ void save_and_quit() {
     for (struct x_symbol* s = symtab; s < symtab + exec.a_symtab / sizeof(struct symbol); s++) {
         if (!s->defined) error("undefined symbol %s", s->name ? s->name : "<unnamed>");
         struct symbol d = {.name = s->name - strtab, .segment = s->segment, .value = s->value};
+        if (s->name == NULL) d.name = SYM_NONAME;
         fwrite(&d, sizeof(d), 1, stdout);
     }
     copy(rel_fd[0]);
