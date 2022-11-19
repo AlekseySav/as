@@ -33,6 +33,7 @@ void save_and_quit() {
     copy(seg_fd[0]);
     copy(seg_fd[1]);
     for (struct x_symbol* s = symtab; s < symtab + exec.a_symtab / sizeof(struct symbol); s++) {
+        if (!s->defined) error("undefined symbol %s", s->name ? s->name : "<unnamed>");
         struct symbol d = {.name = s->name - strtab, .segment = s->segment, .value = s->value};
         fwrite(&d, sizeof(d), 1, stdout);
     }
@@ -70,7 +71,7 @@ void putword(word v) {
 void put_reloc(struct reloc r) {
     if (bad_segment()) return;
     fwrite(&r, sizeof(r), 1, rel_fd[current_segment]);
-    current_segment == SEG_TEXT ? exec.a_trel++ : exec.a_drel++;
+    (current_segment == SEG_TEXT) ? exec.a_trel++ : exec.a_drel++;
 }
 
 static char peek_c = 0;

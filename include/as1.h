@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <stdnoreturn.h>
 
-#define SYMTAB_MAX_SIZE 3181 // including builtins, 3181 is prime
-#define STRTAB_MAX_SIZE 10000
+#define SYMTAB_MAX_SIZE 3181    // including builtins, 3181 is prime
+#define STRTAB_MAX_SIZE 10000   // cannot be >16384 -- only 14 bits for name offset
 
 struct file {
     const char* name;

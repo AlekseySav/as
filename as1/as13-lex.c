@@ -5,7 +5,7 @@
 
 union lval lval;
 
-static int peek_token = -1, peek_token2 = -1;
+static int token_queue[3], queue_len = 0;
 
 #define I 16 // ident
 #define S 17 // space
@@ -93,16 +93,8 @@ static int number() {
 int lex() {
     int t;
     char c;
-    if (peek_token2 >= 0) {
-        t = peek_token2;
-        peek_token2 = -1;
-        return t;
-    }
-    if (peek_token >= 0) {
-        t = peek_token;
-        peek_token = -1;
-        return t;
-    }
+    if (queue_len)
+        return token_queue[--queue_len];
 lex:
     c = get();
     switch (t = ctype(c)) {
@@ -122,19 +114,16 @@ lex:
 }
 
 void unlex(int token) {
-    if (peek_token >= 0) {
-        if (peek_token2 >= 0)
-            fatal("token queue exceeded");
-        peek_token2 = token;
-    }
-    peek_token = token;
+    if (queue_len >= 2)
+        fatal("token queue exceeded");
+    token_queue[queue_len++] = token;
 }
 
 bool trylex(int to) {
-    if ((peek_token = lex()) != to)
-        return false;
-    peek_token = -1;
-    return true;
+    if ((token_queue[queue_len] = lex()) == to)
+        return true;
+    queue_len++;
+    return false;
 }
 
 char strchar(bool* escaped) {

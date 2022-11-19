@@ -35,9 +35,9 @@ void do_assem(void) {
     if (t == L_SYM || t == L_NUM) {
         while (trylex(L_SYM) || trylex(L_NUM)) error("repeated value");
         if (trylex(':'))
-            return define(t, lval, (struct value){.sym = dot, .value = dot->value, .segment = dot->segment, .defined = 1});
+            return define(t, bakup, (struct value){.sym = dot, .value = dot->value, .segment = dot->segment, .defined = 1});
         else if (trylex('='))
-            return define(t, lval, expr());
+            return define(t, bakup, expr());
         unlex(t);
     }
     put_value(expr(), false, 1);
