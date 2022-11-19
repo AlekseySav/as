@@ -8,7 +8,7 @@ int reloc_off;
 
 static struct reloc* get_reloc(FILE* f) {
     if (reloc_off >= A_STROFF(exec))
-        reloc_buf.addr = 0;
+        reloc_buf.addr = (word)-1;
     else {
         fseek(f, reloc_off, SEEK_SET);
         fread(&reloc_buf, sizeof(reloc_buf), 1, f);

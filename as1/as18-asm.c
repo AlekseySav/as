@@ -12,8 +12,11 @@ static struct arg_value v1, v2;
 
 #define two_args \
     one_arg \
-    a2 = next_arg(A_SIZEMASK, &v2); \
-    if (a1 & A_MM && a2 & A_MM) error("too many memory operands");
+    a2 = next_arg(A_BYTEMASK, &v2); \
+    if (a1 & A_MM && a2 & A_MM) error("too many memory operands"); \
+    if (a1 & A_RB && a2 & A_RW || a1 & A_RW && a2 & A_RB) \
+        error("registers of different sizes"); \
+    if (a2 & A_RB) size = 0;
 
 #define swap_args ({ \
     int ___tm; struct arg_value ___tmv; \
@@ -21,7 +24,7 @@ static struct arg_value v1, v2;
     ___tmv = v1, v1 = v2, v2 = ___tmv; }) \
 
 void o_onebyte(int n)   { putbyte(n); }
-void o_string(int n)    { putbyte(n + size); }
+void o_string(int n)    { putbyte(n + size - 1); }
 void o_argbyte(int n)   { putbyte(n); put_value(expr(), false, 0); }
 
 void o_segment(int n) {
@@ -44,10 +47,10 @@ void o_math0(int n) {
         return putbyte(n << 3 | 0 | size), put_modrm(&v1, v2.reg, false);
     if (a2 & A_MM)
         return putbyte(n << 3 | 2 | size), put_modrm(&v2, v1.reg, false);
-    if (a2 & A_RR && v1.reg == 0)
-        return putbyte(n << 3 | 4 | size), put_value(v2.value, false, size);
     if (a2 & A_IB && size == 1)
         return putbyte(0x83), put_modrm(&v1, n, false), put_value(v2.value, false, 0);
+    if (a1 & A_RR && v1.reg == 0)
+        return putbyte(n << 3 | 4 | size), put_value(v2.value, false, size);
     putbyte(0x80 | size), put_modrm(&v1, n, false), put_value(v2.value, false, size);
 }
 

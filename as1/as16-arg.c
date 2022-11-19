@@ -56,7 +56,7 @@ enum arg arg(enum arg mask, struct arg_value* v) {
     enum arg raw = raw_arg(v);
     if (raw & A_RR) v->modrm = 0300 | v->reg;
     if (!(mask & raw)) {
-        error("invalid combination of opcodes and operand");
+        error("invalid combination of opcode and operands");
         raw = mask;
     }
     return raw;

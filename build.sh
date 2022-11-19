@@ -11,4 +11,4 @@ if [[ $1 == "test" ]]; then
 fi
 
 gcc -Iinclude tools/objdump.c -o .bin/objdump
-gcc -Iinclude tools/as2.c -o .bin/as2
+gcc -g -Iinclude tools/as2.c -o .bin/as2
