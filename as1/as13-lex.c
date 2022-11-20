@@ -34,7 +34,7 @@ static bool comment(char c) {
     c = get();
     if (c == '/') {
         while ((c = get()) != '\n' && c != EOF);
-        if (c == EOF) unget(c);
+        unget(c);
         return true;
     }
     if (c != '*') {

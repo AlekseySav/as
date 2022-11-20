@@ -11,7 +11,7 @@ short buf_reloc_fd[2][4096];
 
 #define test_scope(name) ((_scope = name), fprintf(stderr, "%s...", _scope))
 #define end_scope() fprintf(stderr, " ok\n");
-#define test(expr) (expr) ? 0 : fprintf(stderr, "\n%s (line %d) failed\n", _scope, __LINE__);
+#define test(expr) (expr) ? 0 : fprintf(stderr, "%s (line %d) failed\n", _scope, __LINE__);
 #define new_stdin(c) { char buf[] = c; stdin = fmemopen(buf, strlen(buf), "rt"); }
 #define new_write(f) { memset(buf_##f, 0, 4096 * 2); f = fmemopen(buf_##f, 4096 * 2, "wb"); }
 #define file_eq(a, ...) ({ short b[] = { __VA_ARGS__ }; _file_eq((char*)a, (char*)b, sizeof(b)); })
@@ -87,6 +87,7 @@ int main(int argc, char** argv) {
     test(lex() == L_SYM && lval.sym == lookup("x"));
     test(lex() == ';' && current_file.line == 5);
     test(lex() == ';' && current_file.line == 7);
+    test(lex() == ';' && current_file.line == 8);
     test(lex() == L_NUM && lval.num == 123);
     test(lex() == L_NUM && lval.num == 12);
     test(lex() == L_NUM && lval.num == 012);

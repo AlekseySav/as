@@ -71,8 +71,10 @@ void p_byte(int n) {
 
 void p_mm(int n) {
     struct arg_value v;
+repeat:
     arg(A_RM, &v);
     put_modrm(&v, 0, false);
+    if (trylex(',')) goto repeat;
 }
 
 void p_fill(int n) {
