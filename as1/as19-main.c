@@ -12,6 +12,7 @@ int main(int argc, char** argv) {
     init_builtins();
     init_io();
     for (int i = 1; i < argc; i++) {
+        p_segment(SEG_TEXT);
         stdin = freopen(argv[i], "rt", stdin);
         if (!stdin) {
             error("unable to open: '%s'", argv[i]);

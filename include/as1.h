@@ -77,6 +77,7 @@ noreturn void fatal(const char* message);
 /*
  * as12-sym.c
  */
+extern bool no_lookup;
 extern struct x_symbol* symtab;
 extern char strtab[STRTAB_MAX_SIZE];
 void init_builtins();
@@ -87,7 +88,6 @@ struct x_symbol* define_fb(int n);
 /*
  * as13-lex.c
  */
-
 extern union lval lval;
 int lex();
 void unlex(int token);

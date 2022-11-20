@@ -16,5 +16,5 @@ gcc -Iinclude tools/as2.c -o .bin/as2
 if [[ $1 == "install" ]]; then
     mkdir -p /etc/as
     cp .bin/* /etc/as
-    sudo install assem /bin
+    install assem /bin
 fi

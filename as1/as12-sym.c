@@ -1,12 +1,15 @@
 #include <as1.h>
 #include <string.h>
 
+bool no_lookup;
 struct x_symbol* symtab;
 char strtab[STRTAB_MAX_SIZE];
 
 static struct x_symbol* symhash[SYMTAB_MAX_SIZE];
 
 static struct x_symbol* alloc_symbol() {
+    static struct x_symbol temp;
+    if (no_lookup) return &temp;
     if (exec.a_symtab >= SYMTAB_MAX_SIZE)
         fatal("symtab size exceeded");
     return symtab + exec.a_symtab++;
@@ -33,8 +36,8 @@ void init_builtins() {
         while (symhash[n]) n = (n + 1) % SYMTAB_MAX_SIZE;
         symhash[n] = symtab;
     }
-    dot = symbol_pool;
-    ddot = symbol_pool + 1;
+    dot = lookup(".");
+    ddot = lookup("..");
 }
 
 struct x_symbol* lookup(const char* name) {
