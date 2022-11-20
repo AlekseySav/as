@@ -11,4 +11,10 @@ if [[ $1 == "test" ]]; then
 fi
 
 gcc -Iinclude tools/objdump.c -o .bin/objdump
-gcc -g -Iinclude tools/as2.c -o .bin/as2
+gcc -Iinclude tools/as2.c -o .bin/as2
+
+if [[ $1 == "install" ]]; then
+    mkdir -p /etc/as
+    cp .bin/* /etc/as
+    sudo install assem /bin
+fi
