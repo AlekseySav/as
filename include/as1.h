@@ -152,6 +152,10 @@ void o_cjump(int n);
 void o_cbranch(int n);
 void o_jump(int n);
 void o_ascii(int n);
+void o_memory(int n);
+void o_regmem(int n);
+void o_enter(int n);
+void o_setflags(int n);
 
 /*
  * as19-main.c

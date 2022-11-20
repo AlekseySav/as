@@ -197,3 +197,37 @@ void o_ascii(int n) {
     }
     else putbyte(10);
 }
+
+void o_memory(int n) {
+    if (n <= 1) {
+        putbyte(0x0f);
+        n += 0xb4;
+    }
+    putbyte(n);
+    arg(A_RW, &v1);
+    next_arg(A_MM, &v2);
+    put_modrm(&v2, v1.reg, false);
+}
+
+void o_regmem(int n) {
+    putbyte(0x0f);
+    putbyte(n);
+    arg(A_RW, &v1);
+    next_arg(A_RM, &v2);
+    put_modrm(&v2, v1.reg, false);
+}
+
+void o_enter(int n) {
+    putbyte(0xc8);
+    arg(A_IW, &v1);
+    next_arg(A_IM, &v2);
+    put_value(v1.value, false, 1);
+    put_value(v2.value, false, 0);
+}
+
+void o_setflags(int n) {
+    arg(A_MB, &v1);
+    putbyte(0x0f);
+    putbyte(n);
+    put_modrm(&v1, 0, false);
+}

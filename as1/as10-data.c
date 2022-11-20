@@ -67,6 +67,7 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
     { "into",       O_ONEBYTE,  0xce    },
     { "iret",       O_ONEBYTE,  0xcf    },
     { "xlat",       O_ONEBYTE,  0xd7    },
+    { "lock",       O_ONEBYTE,  0xf0    },
     { "repne",      O_ONEBYTE,  0xf2    },
     { "repe",       O_ONEBYTE,  0xf3    },
     { "rep",        O_ONEBYTE,  0xf3    },
@@ -79,6 +80,10 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
     { "cld",        O_ONEBYTE,  0xfc    },
     { "std",        O_ONEBYTE,  0xfd    },
 
+    { "insw",       O_STRING,   0x6d    },
+    { "insb",       X_CHSIZE            },
+    { "outsw",      O_STRING,   0x6f    },
+    { "outsb",      X_CHSIZE            },
     { "movsw",      O_STRING,   0xa5    },
     { "movsb",      X_CHSIZE            },
     { "cmpsw",      O_STRING,   0xa7    },
@@ -222,6 +227,47 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
     { "aam",        O_ASCII,    0       },
     { "aad",        O_ASCII,    1       },
 
+    { "bound",      O_MEMORY,   0x62    },
+    { "lea",        O_MEMORY,   0x8d    },
+    { "les",        O_MEMORY,   0xc4    },
+    { "lds",        O_MEMORY,   0xc5    },
+    { "lfs",        O_MEMORY,   0       },
+    { "lgs",        O_MEMORY,   1       },
+
+    { "bsf",        O_REGMEM,   0xbc    },
+    { "bsr",        O_REGMEM,   0xbd    },
+
+    { "enter",      O_ENTER             },
+
+    { "seto",       O_SETFLAGS, 0x90    },
+    { "setno",      O_SETFLAGS, 0x91    },
+    { "setb",       O_SETFLAGS, 0x92    },
+    { "setc",       O_SETFLAGS, 0x92    },
+    { "setnae",     O_SETFLAGS, 0x92    },
+    { "setae",      O_SETFLAGS, 0x93    },
+    { "setnb",      O_SETFLAGS, 0x93    },
+    { "setnc",      O_SETFLAGS, 0x93    },
+    { "sete",       O_SETFLAGS, 0x94    },
+    { "setz",       O_SETFLAGS, 0x94    },
+    { "setne",      O_SETFLAGS, 0x95    },
+    { "setnz",      O_SETFLAGS, 0x95    },
+    { "setbe",      O_SETFLAGS, 0x96    },
+    { "setna",      O_SETFLAGS, 0x96    },
+    { "sets",       O_SETFLAGS, 0x98    },
+    { "setns",      O_SETFLAGS, 0x99    },
+    { "setp",       O_SETFLAGS, 0x9a    },
+    { "setpe",      O_SETFLAGS, 0x9a    },
+    { "setnp",      O_SETFLAGS, 0x9b    },
+    { "setpo",      O_SETFLAGS, 0x9b    },
+    { "setl",       O_SETFLAGS, 0x9c    },
+    { "setnge",     O_SETFLAGS, 0x9c    },
+    { "setge",      O_SETFLAGS, 0x9d    },
+    { "setnl",      O_SETFLAGS, 0x9d    },
+    { "setle",      O_SETFLAGS, 0x9e    },
+    { "setng",      O_SETFLAGS, 0x9e    },
+    { "setg",       O_SETFLAGS, 0x9f    },
+    { "setnle",     O_SETFLAGS, 0x9f    },
+
     { NULL }
 };
 
@@ -234,5 +280,6 @@ void (*opcodes[I_N_OPCODES])(int n) = {
     o_math0, o_math1, o_math2, o_test, o_incdec,
     o_stack, o_ret, o_inout, o_move, o_xchg,
     o_cjump, o_cbranch, o_jump,
-    o_ascii
+    o_ascii, o_memory, o_regmem,
+    o_enter, o_setflags
 };

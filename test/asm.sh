@@ -36,7 +36,7 @@ run-nasm() {
         "-r.=$" "-r$branch_as=$branch" "-rj=jmp"\
         "$@" $'\n' >test/tmp/1.asm
     echo "times (\$-\$\$) % 2 db 0" >>test/tmp/1.asm
-    nasm test/tmp/1.asm
+    nasm -w-lock test/tmp/1.asm
 }
 
 run-as() {
@@ -74,12 +74,12 @@ ok() {
 }
 
 echo -n "onebyte"
-onebyte="daa|das|aaa|aas|pusha|popa|nop|cbw|cwd|pushf|popf|sahf|lahf|leave|int3|into|iret|xlat|repne|repe|rep|hlt|cmc|clc|stc|cli|sti|cld|std"
+onebyte="daa|das|aaa|aas|pusha|popa|nop|cbw|cwd|pushf|popf|sahf|lahf|leave|int3|into|iret|xlat|lock|repne|repe|rep|hlt|cmc|clc|stc|cli|sti|cld|std"
 run-test - $onebyte
 ok
 
 echo -n "string"
-string="movsw|movsb|cmpsw|cmpsb|stosw|stosb|lodsw|lodsb|scasw|scasb"
+string="insw|insb|outsw|outsb|movsw|movsb|cmpsw|cmpsb|stosw|stosb|lodsw|lodsb|scasw|scasb"
 run-test - $string
 ok
 
@@ -195,4 +195,17 @@ ok
 echo -n "aam/aad"
 run-test - "aad|aam"
 run-test - "aad|aam" " " $imm_small
+ok
+
+echo -n "memory"
+run-test - "bound|lea|les|lds|lfs|lgs" " " $regw , $modrm 
+ok
+
+echo -n "enter"
+run-test - "enter" " " $ummw , $imm_small
+ok
+
+echo -n "setflags"
+setflags="seto|setno|setb|setc|setnae|setae|setnb|setnc|sete|setz|setne|setnz|setbe|setna|sets|setns|setp|setpe|setnp|setpo|setl|setnge|setge|setnl|setle|setng|setg|setnle"
+run-test - $setflags " " $rmb
 ok
