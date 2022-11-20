@@ -6,5 +6,5 @@ case $i in
     -c) /etc/as/as1 $@ ;;
     -b) /etc/as/as2 $@ ;;
     -d) /etc/as/objdump $@ ;;
-    -x) /etc/as/as1 $@ >/etc/as/tmp.o; /etc/as/as2 /etc/as/tmp.o; rm /etc/as/tmp.o ;;
+    -x) /etc/as/as1 $@ >___tmp.o; /etc/as/as2 ___tmp.o; rm ___tmp.o ;;
 esac

@@ -20,6 +20,7 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
     { ".even",      P_EVEN,             },
     { ".mut",       P_MUT,              },
     { ".byte",      P_BYTE,             },
+    { ".mm",        P_MM,               },
     { ".fill",      P_FILL,             },
 
     { "al",         I_REGB,     0       },
@@ -273,7 +274,7 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
 
 void (*opcodes[I_N_OPCODES])(int n) = {
     bad_opcode,
-    p_error, p_if, p_endif, p_segment, p_even, p_mut, p_byte, p_fill,
+    p_error, p_if, p_endif, p_segment, p_even, p_mut, p_byte, p_mm, p_fill,
     bad_opcode, bad_opcode, bad_opcode, bad_opcode,
     x_chsize,
     o_onebyte, o_string, o_argbyte, o_segment, o_sys,

@@ -128,6 +128,7 @@ void p_segment(int n);
 void p_even(int n);
 void p_mut(int n);
 void p_byte(int n);
+void p_mm(int n);
 void p_fill(int n);
 
 /*

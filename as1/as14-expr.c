@@ -59,6 +59,8 @@ struct value expr(void) {
                 if (a.segment != SEG_CONST && b.segment != SEG_CONST)
                     error("adding two relative values");
                 a.value += b.value;
+                if (a.segment == SEG_CONST)
+                    a.segment = b.segment;
                 a.sym = NULL;
                 break;
             case '-':

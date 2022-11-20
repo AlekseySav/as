@@ -69,6 +69,12 @@ void p_byte(int n) {
     putbyte(cexpr());
 }
 
+void p_mm(int n) {
+    struct arg_value v;
+    arg(A_RM, &v);
+    put_modrm(&v, 0, false);
+}
+
 void p_fill(int n) {
     int rep, val = 0;
     rep = cexpr();

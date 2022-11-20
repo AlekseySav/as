@@ -9,8 +9,9 @@ short buf_relocs[4096];
 short buf_seg_fd[3][4096];
 short buf_reloc_fd[2][4096];
 
-#define test_scope(name) ((_scope = name), fprintf(stderr, "%s...\n", _scope))
-#define test(expr) (expr) ? 0 : fprintf(stderr, "%s (line %d) failed\n", _scope, __LINE__);
+#define test_scope(name) ((_scope = name), fprintf(stderr, "%s...", _scope))
+#define end_scope() fprintf(stderr, " ok\n");
+#define test(expr) (expr) ? 0 : fprintf(stderr, "\n%s (line %d) failed\n", _scope, __LINE__);
 #define new_stdin(c) { char buf[] = c; stdin = fmemopen(buf, strlen(buf), "rt"); }
 #define new_write(f) { memset(buf_##f, 0, 4096 * 2); f = fmemopen(buf_##f, 4096 * 2, "wb"); }
 #define file_eq(a, ...) ({ short b[] = { __VA_ARGS__ }; _file_eq((char*)a, (char*)b, sizeof(b)); })
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
     test(lookup("hello") == x);
     test(lookup("hello")->value == 7);
     test(XSYM_UNNAMED(lookup(NULL)));
+    end_scope();
 
     test_scope("lexer");
     current_file.line = 1;
@@ -103,6 +105,7 @@ int main(int argc, char** argv) {
     test(lex() == L_SYM && lval.sym == lookup("la"));
     test(lex() == L_EOF);
     fclose(stdin);
+    end_scope();
 
     test_scope("expr parser");
     new_stdin(
@@ -126,12 +129,13 @@ int main(int argc, char** argv) {
     lookup("y")->value = 18;
     test((v = expr()).value == 1 && v.defined && v.segment == SEG_CONST);
     test((v = expr()).value == 19 && v.defined && v.segment == SEG_TEXT);
-    test((v = expr()).value == 19 && v.defined && v.segment == SEG_CONST);
+    test((v = expr()).value == 19 && v.defined && v.segment == SEG_TEXT);
     test((v = expr()).value == 2 && v.defined && v.segment == SEG_CONST);
     test(!(v = expr()).defined);
     test((v = expr()).defined && v.segment == SEG_TEXT);
     test(lex() == L_EOF);
     fclose(stdin);
+    end_scope();
 
     test_scope("arg");
     new_stdin(
@@ -168,6 +172,7 @@ int main(int argc, char** argv) {
     test(next_arg(~0, &av) == A_MM && av.value.value == (word)-1 && av.value.defined && av.modrm == 0204);
     test(next_arg(~0, &av) == A_MM && av.value.value == (word)-5 && av.value.defined && av.modrm == 0006);
     fclose(stdin);
+    end_scope();
 
     return 0;
 }

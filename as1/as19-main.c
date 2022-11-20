@@ -1,5 +1,7 @@
 #include <as1.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 static void align(int seg) {
     p_segment(seg);
@@ -11,6 +13,10 @@ int main(int argc, char** argv) {
     init_io();
     for (int i = 1; i < argc; i++) {
         stdin = freopen(argv[i], "rt", stdin);
+        if (!stdin) {
+            error("unable to open: '%s'", argv[i]);
+            continue;
+        }
         current_file.line = 1;
         current_file.name = argv[i];
         while (assem());
