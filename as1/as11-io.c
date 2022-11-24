@@ -92,10 +92,14 @@ void unget(char c) {
 void error(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    fprintf(stderr, "as1 error: %s:%d: ", current_file.name, current_file.line);
+    fprintf(stderr, "as1 \e[31merror: \e[0m");
+    if (current_file.name)
+        fprintf(stderr, "%s:%d: ", current_file.name, current_file.line);
     vfprintf(stderr, fmt, ap);
     putc('\n', stderr);
     va_end(ap);
+    if (!current_file.name)
+        fatal("no source file");
 }
 
 noreturn void fatal(const char* message) {

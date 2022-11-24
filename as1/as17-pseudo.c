@@ -83,3 +83,16 @@ void p_fill(int n) {
     if (trylex(',')) val = cexpr();
     while (rep--) putbyte(val);
 }
+
+void p_func(int n) {
+    if (!trylex(L_SYM)) {
+        error("name expected");
+        return;
+    }
+    assign(lval.sym, (struct value){.defined = true, .segment = SEG_DATA, .sym = NULL, .value = exec.a_data});
+    p_segment(SEG_DATA);
+    putword(exec.a_text);
+    p_segment(SEG_TEXT);
+    bytes_written = 0;
+    putbyte(0x55), putbyte(0x89), putbyte(0xe5);
+}

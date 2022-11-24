@@ -6,6 +6,8 @@
 static void align(int seg) {
     p_segment(seg);
     p_even(0);
+    dot->value += bytes_written;
+    bytes_written = 0;
 }
 
 int main(int argc, char** argv) {
@@ -24,6 +26,7 @@ int main(int argc, char** argv) {
         align(SEG_TEXT);
         align(SEG_DATA);
         align(SEG_BSS);
+        current_file.name = NULL;
     }
     p_segment(SEG_BSS);
     exec.a_bss = dot->value;

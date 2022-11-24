@@ -130,6 +130,7 @@ void p_mut(int n);
 void p_byte(int n);
 void p_mm(int n);
 void p_fill(int n);
+void p_func(int n);
 
 /*
  * as18-asm.c

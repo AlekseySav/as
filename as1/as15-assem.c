@@ -19,6 +19,8 @@ static void define(int t, union lval lval, struct value value) {
 }
 
 void assign(struct x_symbol* sym, struct value value) {
+    if (sym->defined && !sym->mutable)
+        error("re-assigning immutable variable");
     sym->defined = value.defined;
     sym->segment = value.segment;
     sym->value = value.value;
@@ -38,8 +40,8 @@ void do_assem(void) {
             return define(t, bakup, (struct value){.sym = dot, .value = dot->value, .segment = dot->segment, .defined = 1});
         else if (trylex('='))
             return define(t, bakup, expr());
-        unlex(t);
     }
+    unlex(t);
     put_value(expr(), false, 1);
 }
 

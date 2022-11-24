@@ -16,6 +16,15 @@ static int get_modrm(int arg_size) {
     return mod | rm;
 }
 
+static void seg_override() {
+    if (!trylex(L_SYM)) return;
+    unlex(L_SYM);
+    if (lval.sym->builtin_id != I_SREG)
+        return;
+    o_segment(0);
+    trylex(':');
+}
+
 static enum arg raw_arg(struct arg_value* v) {
     int arg_size = 2;
     if (trylex('*')) arg_size = 1;
@@ -37,6 +46,7 @@ static enum arg raw_arg(struct arg_value* v) {
     }
     if (!trylex('('))   // get imm
         return A_IB << (arg_size - 1);
+    seg_override();
     if (trylex(L_SYM)) {    // get mem
         if (XSYM_BUILTIN(lval.sym)) {
             v->modrm = get_modrm(arg_size);

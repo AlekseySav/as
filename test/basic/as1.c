@@ -86,8 +86,8 @@ int main(int argc, char** argv) {
     test(lex() == ';' && current_file.line == 3);
     test(lex() == L_SYM && lval.sym == lookup("x"));
     test(lex() == ';' && current_file.line == 5);
+    test(lex() == ';' && current_file.line == 6);
     test(lex() == ';' && current_file.line == 7);
-    test(lex() == ';' && current_file.line == 8);
     test(lex() == L_NUM && lval.num == 123);
     test(lex() == L_NUM && lval.num == 12);
     test(lex() == L_NUM && lval.num == 012);
