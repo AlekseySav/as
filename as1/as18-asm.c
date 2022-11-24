@@ -12,13 +12,16 @@ bool sreg_is_ok;
     a1 = arg(A_BYTEMASK ^ A_IM | (sreg_is_ok ? A_SR : 0), &v1); \
     if (a1 & A_RB) size = 0; \
 
-#define two_args \
+#define two_args_2mm_ok \
     one_arg \
     a2 = next_arg(A_BYTEMASK | (sreg_is_ok ? A_SR : 0), &v2); \
-    if (a1 & A_MM && a2 & A_MM) error("too many memory operands"); \
     if (a1 & A_RB && a2 & A_RW || a1 & A_RW && a2 & A_RB) \
         error("registers of different sizes"); \
     if (a2 & A_RB) size = 0;
+
+#define two_args \
+    two_args_2mm_ok \
+    if (a1 & A_MM && a2 & A_MM) error("too many memory operands");
 
 #define swap_args ({ \
     int ___tm; struct arg_value ___tmv; \
@@ -126,8 +129,13 @@ void o_inout(int n) {
 
 void o_move(int n) {
     sreg_is_ok = true;
-    two_args
+    two_args_2mm_ok
     sreg_is_ok = false;
+    if (a1 & A_MM && a2 & A_MM) {
+        putbyte(0xff), put_modrm(&v2, 6, false);
+        putbyte(0x8f), put_modrm(&v1, 0, false);
+        return;
+    }
     if (a2 & A_IM) {
         if (a1 & A_RR)
             return putbyte(0xb0 | size << 3 | v1.reg), put_value(v2.value, false, size);
