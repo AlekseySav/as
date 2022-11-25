@@ -34,8 +34,7 @@ void o_argbyte(int n)   { putbyte(n); put_value(expr(), false, 0); }
 
 void o_segment(int n) {
     arg(A_SR, &v1);
-    if (v1.reg < 4) putbyte(v1.reg << 3 | 0x26);
-    else putbyte(0x60 + v1.reg);
+    segment_override(v1.reg);
 }
 
 void o_sys(int n) {
@@ -238,4 +237,9 @@ void o_setflags(int n) {
     putbyte(0x0f);
     putbyte(n);
     put_modrm(&v1, 0, false);
+}
+
+void segment_override(int seg) {
+    if (seg < 4) putbyte(seg << 3 | 0x26);
+    else putbyte(0x60 + seg);
 }

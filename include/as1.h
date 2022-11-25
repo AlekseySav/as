@@ -135,6 +135,8 @@ void p_func(int n);
 /*
  * as18-asm.c
  */
+void segment_override(int seg);
+
 void o_onebyte(int n);
 void o_string(int n);
 void o_argbyte(int n);

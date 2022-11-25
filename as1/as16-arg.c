@@ -18,10 +18,11 @@ static int get_modrm(int arg_size) {
 
 static void seg_override() {
     if (!trylex(L_SYM)) return;
-    unlex(L_SYM);
-    if (lval.sym->builtin_id != I_SREG)
+    if (lval.sym->builtin_id != I_SREG) {
+        unlex(L_SYM);
         return;
-    o_segment(0);
+    }
+    segment_override(lval.sym->value);
     trylex(':');
 }
 

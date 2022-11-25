@@ -20,7 +20,7 @@ static char ctype[129] = {
     B,  B,  B,  B,  B,  B,  B,  B,  B,  S,  L,  B,  B,  B,  B,  B,
     B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,  B,
     S,  O,  B,  B,  B,  O,  O,  Q,  O,  O,  O,  O,  O,  O,  I,  O,
-    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  O,  L,  O,  O,  B,  O,
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  O,  L,  O,  O,  O,  O,
     B, 10, 11, 12, 13, 14, 15,  I,  I,  I,  I,  I,  I,  I,  I,  I,
     I,  I,  I,  I,  I,  I,  I,  I,  I,  I,  I,  O,  B,  O,  B,  I,
     B, 10, 11, 12, 13, 14, 15,  I,  I,  I,  I,  I,  I,  I,  I,  I,

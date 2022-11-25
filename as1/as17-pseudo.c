@@ -14,9 +14,9 @@ void p_if(int n) {
     bool bad;
     int save_line = current_file.line;
     word cond = cexpr();
-ifelse:
     no_lookup = !cond;
     while (!trylex(L_SYM)) {
+ifelse:
         if (cond) bad = !assem();
         else bad = lex() == L_EOF;
         if (bad) {
@@ -25,8 +25,10 @@ ifelse:
             return;
         }
     }
-    if (!XSYM_BUILTIN(lval.sym) || lval.sym->builtin_id != P_ENDIF)
+    if (!XSYM_BUILTIN(lval.sym) || lval.sym->builtin_id != P_ENDIF) {
+        unlex(L_SYM);
         goto ifelse;
+    }
     cond = !cond;
     if (lval.sym->value == 0)
         goto ifelse;
