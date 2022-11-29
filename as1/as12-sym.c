@@ -1,7 +1,6 @@
 #include <as1.h>
 #include <string.h>
 
-bool no_lookup;
 struct x_symbol* symtab;
 char strtab[STRTAB_MAX_SIZE];
 
@@ -9,7 +8,7 @@ static struct x_symbol* symhash[SYMTAB_MAX_SIZE];
 
 static struct x_symbol* alloc_symbol() {
     static struct x_symbol temp;
-    if (no_lookup) return &temp;
+    if (iffalse) return &temp;
     if (exec.a_symtab >= SYMTAB_MAX_SIZE)
         fatal("symtab size exceeded");
     return symtab + exec.a_symtab++;

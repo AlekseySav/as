@@ -52,7 +52,7 @@ static bool bad_segment() {
         error("trying to store data in non-writable section");
         return true;
     }
-    return false;
+    return iffalse;
 }
 
 void putbyte(byte v) {

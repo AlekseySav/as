@@ -76,6 +76,7 @@ struct value expr(void) {
                 break;
             case '*': o; a.value *= b.value; break;
             case '/': o; a.value /= b.value; break;
+            case '%': o; a.value %= b.value; break;
             case '|': o; a.value |= b.value; break;
             case '&': o; a.value &= b.value; break;
             case '=': o; a.value = (a.value == b.value); break;

@@ -50,6 +50,7 @@ struct arg_value {
 /*
  * as10.c -- common data, used in many files
  */
+extern bool iffalse; // in .if [false] section
 extern int current_segment;
 extern struct exec exec;
 extern struct file current_file;
@@ -77,7 +78,6 @@ noreturn void fatal(const char* message);
 /*
  * as12-sym.c
  */
-extern bool no_lookup;
 extern struct x_symbol* symtab;
 extern char strtab[STRTAB_MAX_SIZE];
 void init_builtins();
@@ -123,6 +123,7 @@ void put_modrm(struct arg_value* mod, char rr, bool disponly);
  */
 void p_error(int n);
 void p_if(int n);
+void p_else(int n);
 void p_endif(int n);
 void p_segment(int n);
 void p_even(int n);

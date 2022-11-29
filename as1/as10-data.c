@@ -1,5 +1,6 @@
 #include <as1.h>
 
+bool iffalse;
 int current_segment;
 struct exec exec;
 struct file current_file;
@@ -11,7 +12,7 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
 
     { ".error",     P_ERROR             },
     { ".if",        P_IF,               },
-    { ".else",      P_ENDIF,    0       },
+    { ".else",      P_ELSE,     0       },
     { ".endif",     P_ENDIF,    1       },
     { ".text",      P_SEGMENT,  0       },
     { ".data",      P_SEGMENT,  1       },
@@ -275,7 +276,7 @@ struct x_symbol symbol_pool[SYMTAB_MAX_SIZE] = {
 
 void (*opcodes[I_N_OPCODES])(int n) = {
     bad_opcode,
-    p_error, p_if, p_endif, p_segment, p_even, p_mut, p_byte, p_mm, p_fill, p_func,
+    p_error, p_if, p_else, p_endif, p_segment, p_even, p_mut, p_byte, p_mm, p_fill, p_func,
     bad_opcode, bad_opcode, bad_opcode, bad_opcode,
     x_chsize,
     o_onebyte, o_string, o_argbyte, o_segment, o_sys,

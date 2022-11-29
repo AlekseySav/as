@@ -6,7 +6,7 @@
 #define STRTAB_MAX_SIZE 10000   // cannot be >16384 -- only 14 bits for name offset
 
 enum builtins {
-    P_ERROR = 1, P_IF, P_ENDIF, P_SEGMENT, P_EVEN, P_MUT, P_BYTE, P_MM, P_FILL, P_FUNC,
+    P_ERROR = 1, P_IF, P_ELSE, P_ENDIF, P_SEGMENT, P_EVEN, P_MUT, P_BYTE, P_MM, P_FILL, P_FUNC,
     I_REGB, I_REGW, I_REGSUM, I_SREG,
     X_CHSIZE,
     O_ONEBYTE, O_STRING, O_ARGBYTE, O_SEGMENT, O_SYS,

@@ -7,39 +7,31 @@ void p_error(int n) {
         *p++ = c;
     *p = '\0';
     if (c == EOF) unget(c);
-    error(p);
+    if (!iffalse) error(p);
 }
 
+static int if_level = 0;
+
 void p_if(int n) {
-    bool bad;
-    int save_line = current_file.line;
-    word cond = cexpr();
-    no_lookup = !cond;
-    while (!trylex(L_SYM)) {
-ifelse:
-        if (cond) bad = !assem();
-        else bad = lex() == L_EOF;
-        if (bad) {
-            error("non-terminated .if on %d", save_line);
-            unlex(L_EOF);
-            return;
-        }
-    }
-    if (!XSYM_BUILTIN(lval.sym) || lval.sym->builtin_id != P_ENDIF) {
-        unlex(L_SYM);
-        goto ifelse;
-    }
-    cond = !cond;
-    if (lval.sym->value == 0)
-        goto ifelse;
-    no_lookup = false;
+    if (if_level++)
+        error("embeded .if not supported yet");
+    iffalse = !cexpr();    
+}
+
+void p_else(int n) {
+    if (!if_level)
+        error(".else without .if");
+    iffalse = !iffalse;
 }
 
 void p_endif(int n) {
-    error(".%s without .if", n ? "endif" : "else");
+    if (!if_level)
+        error(".endif without .if");
+    iffalse = false;
 }
 
 void p_segment(int n) {
+    if (iffalse) return;
     static int saved_dot_values[4];
     saved_dot_values[current_segment] = dot->value;
     dot->segment = ddot->segment = current_segment = n;
@@ -48,6 +40,7 @@ void p_segment(int n) {
 }
 
 void p_even(int n) {
+    if (iffalse) return;
     if (dot->value % 2) {
         if (current_segment < 2) putbyte(0);
         else dot->value++;
@@ -55,6 +48,10 @@ void p_even(int n) {
 }
 
 void p_mut(int n) {
+    if (if_level) {
+        error("cannot use .mut inside .if");
+        return;
+    }
 define:
     if (!trylex(L_SYM)) {
         error("required symbol name");
@@ -68,7 +65,9 @@ define:
 }
 
 void p_byte(int n) {
+byte:
     putbyte(cexpr());
+    if (trylex(',')) goto byte;
 }
 
 void p_mm(int n) {
@@ -91,6 +90,7 @@ void p_func(int n) {
         error("name expected");
         return;
     }
+    if (iffalse) return;
     assign(lval.sym, (struct value){.defined = true, .segment = SEG_DATA, .sym = NULL, .value = exec.a_data});
     p_segment(SEG_DATA);
     putword(exec.a_text);

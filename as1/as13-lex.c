@@ -133,11 +133,18 @@ char strchar(bool* escaped) {
     switch (get()) {
         case 'n': return '\n';
         case 'r': return '\r';
+        case 'b': return '\b';
+        case 'e': return '\e';
         case 's': return ' ';
         case 't': return '\t';
         case '0': return '\0';
         case '>': return '>';
         case '\\': return '\\';
+        case '^':
+            c = get();
+            if (c < '@' || c > '_')
+                error("bad control character");
+            return c - '@';
         default:
             error("bad escape character");
             unget(c);
