@@ -28,6 +28,7 @@ void p_endif(int n) {
     if (!if_level)
         error(".endif without .if");
     iffalse = false;
+    if_level--;
 }
 
 void p_segment(int n) {

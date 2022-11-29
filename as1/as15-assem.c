@@ -19,6 +19,7 @@ static void define(int t, union lval lval, struct value value) {
 }
 
 void assign(struct x_symbol* sym, struct value value) {
+    if (iffalse) return;
     if (sym->defined && !sym->mutable)
         error("re-assigning immutable variable");
     sym->defined = value.defined;
